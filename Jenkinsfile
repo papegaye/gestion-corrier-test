@@ -18,11 +18,11 @@ pipeline {
 
         // Frontend GitHub
         FRONTEND_REPO_URL     = 'https://github.com/papegaye/frontend-courrier-physique.git'
-        FRONTEND_REPO_BRANCH  = 'pmg'
+        FRONTEND_REPO_BRANCH  = 'master'
         FRONTEND_CREDENTIALS  = 'credential-id-github'
 
         // SonarQube
-        SONAR_HOST_URL = 'http://localhost:9000'
+        //SONAR_HOST_URL = 'http://localhost:9000'
     }
 
     stages {
