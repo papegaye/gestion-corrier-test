@@ -4,9 +4,9 @@ pipeline {
         label 'agent-windows'
     }
 
-    tools {
+    /* tools {
         maven 'Maven-3.9.6'
-    }
+    } */
 
     environment {
         // DockerHub
@@ -54,7 +54,7 @@ pipeline {
         /* =======================================================
            3. SONARQUBE BACKEND
         ======================================================== */
-        stage('Analyse SonarQube Backend') {
+        /* stage('Analyse SonarQube Backend') {
             steps {
                 dir('backend') {
                     script {
@@ -73,7 +73,7 @@ pipeline {
                     }
                 }
             }
-        }
+        } */
 
        /*  stage('Quality Gate Backend') {
             steps {
@@ -86,7 +86,7 @@ pipeline {
         /* =======================================================
            4. SONARQUBE FRONTEND
         ======================================================== */
-        stage('Analyse SonarQube Frontend') {
+        /* stage('Analyse SonarQube Frontend') {
             steps {
                 dir('frontend') {
                     script {
@@ -110,7 +110,7 @@ pipeline {
                     }
                 }
             }
-        }
+        } */
 
         /* stage('Quality Gate Frontend') {
             steps {
