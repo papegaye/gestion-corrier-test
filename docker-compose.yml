@@ -19,7 +19,8 @@ services:
       retries: 5
 
   backend-courrier-service:
-    build: .
+#    build: .
+    image: ${BACKEND_IMAGE:BACKEND_TAG}
     container_name: backend-courrier
     restart: always
     ports:
@@ -32,6 +33,19 @@ services:
     depends_on:
       db-courrier-service:
         condition: service_healthy
+  # 🔹 Frontend Angular via Nginx
+  frontend-service:
+    image: ${FRONTEND_IMAGE}:${FRONTEND_TAG}
+    container_name: frontend-courrier
+    restart: always
+    ports:
+      - "4200:80"   # Angular écoute sur 4200 en local
+      # - "0.0.0.0:4200:80"  # Windows peut y accéder via host.docker.internal depuis un conteneur
+
+    depends_on:
+      - backend-service
+    networks:
+      - courrier-net
 
   phpmyadmin-courrier-service:
     image: phpmyadmin
