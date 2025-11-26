@@ -18,21 +18,23 @@ services:
       timeout: 5s
       retries: 5
 
-  backend-courrier-service:
-#    build: .
-    image: ${BACKEND_IMAGE:BACKEND_TAG}
+  backend-service:
+    image: ${BACKEND_IMAGE}:${BACKEND_TAG}
     container_name: backend-courrier
     restart: always
     ports:
       - "8900:8900"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db-courrier-service:3306/db-formation?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-courrier-service:3306/devopsdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: devops
       SPRING_DATASOURCE_PASSWORD: devopspass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       db-courrier-service:
         condition: service_healthy
+    networks:
+      - courrier-net
+      -
   # 🔹 Frontend Angular via Nginx
   frontend-service:
     image: ${FRONTEND_IMAGE}:${FRONTEND_TAG}
