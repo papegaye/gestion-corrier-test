@@ -56,7 +56,7 @@ pipeline {
                 dir('backend') {
                     script {
                         withSonarQubeEnv('SonarQube') {
-                            withCredentials([string(credentialsId: 'sonar-credentials', variable: 'SONAR_AUTH_TOKEN')]) {
+                            withCredentials([string(credentialsId: 'sonar-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
 
                                 bat """
                                     mvn clean verify -DskipTests sonar:sonar ^
