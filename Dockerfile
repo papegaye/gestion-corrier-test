@@ -26,8 +26,8 @@ WORKDIR /app
 # Copier le JAR généré depuis l'étape de build et le renommer
 COPY --from=build /app/target/*.jar backend-courrier.jar
 
-# Exposer le port 8080 pour accéder à l'application Spring Boot
-EXPOSE 8084
+# Exposer le port 8900 pour accéder à l'application Spring Boot
+EXPOSE 8900
 
 # Lancer l'application au démarrage du conteneur
 ENTRYPOINT ["java", "-jar", "backend-courrier.jar"]

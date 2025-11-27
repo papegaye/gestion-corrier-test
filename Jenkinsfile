@@ -48,7 +48,74 @@ pipeline {
             }
         }
 
+        /* =======================================================
+           3. SONARQUBE BACKEND
+        ======================================================== */
+        stage('Analyse SonarQube Backend') {
+            steps {
+                dir('backend') {
+                    script {
+                        withSonarQubeEnv('SonarQube') {
+                            withCredentials([string(credentialsId: 'sonar-credentials', variable: 'SONAR_AUTH_TOKEN')]) {
 
+                                bat """
+                                    mvn clean verify -DskipTests sonar:sonar ^
+                                        -Dsonar.projectKey=analyse-code-backend ^
+                                        -Dsonar.projectName="analyse-code-backend" ^
+                                        -Dsonar.host.url=http://localhost:9000 ^
+                                        -Dsonar.token=%SONAR_AUTH_TOKEN%
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+       /*  stage('Quality Gate Backend') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        } */
+
+        /* =======================================================
+           4. SONARQUBE FRONTEND
+        ======================================================== */
+        stage('Analyse SonarQube Frontend') {
+            steps {
+                dir('frontend') {
+                    script {
+
+                        withSonarQubeEnv('SonarQube') {
+                            withCredentials([string(credentialsId: 'sonar-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
+
+                                def scannerHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+
+                                bat """
+                                    "${scannerHome}\\bin\\sonar-scanner.bat" ^
+                                        -Dsonar.projectKey=analyse-code-frontend ^
+                                        -Dsonar.projectName="analyse-code-frontend" ^
+                                        -Dsonar.sources=src ^
+                                        -Dsonar.host.url=http://localhost:9000 ^
+                                        -Dsonar.token=%SONAR_AUTH_TOKEN%
+                                """
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        /* stage('Quality Gate Frontend') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        } */
 
         /* =======================================================
            5. DOCKER BUILDS
