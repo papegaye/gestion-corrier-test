@@ -20,6 +20,9 @@ pipeline {
         FRONTEND_REPO_URL     = 'https://github.com/papegaye/frontend-courrier-test.git'
         FRONTEND_REPO_BRANCH  = 'master'
         FRONTEND_CREDENTIALS  = 'credential-id-github'
+
+        // SonarQube
+        SONAR_HOST_URL = 'http://localhost:9000'
     }
 
     stages {
