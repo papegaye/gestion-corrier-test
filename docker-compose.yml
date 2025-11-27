@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: devopsdb
+      MYSQL_DATABASE: db-devopsdb
       MYSQL_USER: devops
       MYSQL_PASSWORD: devopspass
     ports:
