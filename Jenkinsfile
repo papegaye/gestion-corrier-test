@@ -56,7 +56,7 @@ pipeline {
                 dir('backend') {
                     script {
                         withSonarQubeEnv('SonarQube') {
-                            withCredentials([string(credentialsId: 'sonar-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
+                            withCredentials([string(credentialsId: 'sonor-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
 
                                 bat """
                                     mvn clean verify -DskipTests sonar:sonar ^
@@ -89,7 +89,7 @@ pipeline {
                     script {
 
                         withSonarQubeEnv('SonarQube') {
-                            withCredentials([string(credentialsId: 'sonar-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
+                            withCredentials([string(credentialsId: 'sonor-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
 
                                 def scannerHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
 
