@@ -121,7 +121,69 @@ pipeline {
         } */
 
         /* =======================================================
-           5. DOCKER BUILDS
+           5. OWASP DEPENDENCY-CHECK BACKEND
+        ======================================================== */
+        stage('OWASP Dependency-Check Backend') {
+            steps {
+                dir('backend') {
+                    script {
+                        def depCheckHome = tool(
+                            name: 'Owasp-Dependency-Check',
+                            type: 'org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation'
+                        )
+
+                        bat """
+                            if not exist reports mkdir reports
+                            "${depCheckHome}\\bin\\dependency-check.bat" ^
+                                --scan . ^
+                                --format HTML --format XML ^
+                                --out reports
+                        """
+                    }
+                }
+            }
+            post {
+                always {
+                    dependencyCheckPublisher pattern: 'backend/reports/dependency-check-report.xml'
+                    archiveArtifacts artifacts: 'backend/reports/dependency-check-report.html', fingerprint: true
+                }
+            }
+        }
+
+        /* =======================================================
+           6. OWASP DEPENDENCY-CHECK FRONTEND ddd
+        ======================================================== */
+        stage('OWASP Dependency-Check Frontend') {
+            steps {
+                dir('frontend') {
+                    script {
+                        def depCheckHome = tool(
+                            name: 'Owasp-Dependency-Check',
+                            type: 'org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation'
+                        )
+
+                        bat """
+                            if not exist reports mkdir reports
+                            "${depCheckHome}\\bin\\dependency-check.bat" ^
+                                --scan . ^
+                                --disableAssembly ^
+                                --disableYarnAudit ^
+                                --format HTML --format XML ^
+                                --out reports
+                        """
+                    }
+                }
+            }
+            post {
+                always {
+                    dependencyCheckPublisher pattern: 'frontend/reports/dependency-check-report.xml'
+                    archiveArtifacts artifacts: 'frontend/reports/dependency-check-report.html', fingerprint: true
+                }
+            }
+        }
+
+        /* =======================================================
+           7. DOCKER BUILDS
         ======================================================== */
         stage('Build Backend Docker Image') {
             steps {
