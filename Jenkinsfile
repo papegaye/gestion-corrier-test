@@ -190,7 +190,7 @@ pipeline {
         /* =======================================================
            8. TRIVY BACKEND
         ======================================================== */
-        /* stage('Trivy - Scan Backend') {
+        stage('Trivy - Scan Backend') {
             steps {
                 dir('backend') {
 
@@ -238,7 +238,7 @@ pipeline {
                 }
             }
         }
- */
+
         /* =======================================================
            9. TRIVY FRONTEND
         ======================================================== */
@@ -309,7 +309,7 @@ pipeline {
                 dir('backend') {
                     script {
 
-                        def backendUrl = "http://localhost:8900"
+                        def backendUrl = "http://host.docker.internal:8900"
 
                         bat 'if not exist owaspzap-reports mkdir owaspzap-reports'
 
@@ -350,7 +350,7 @@ pipeline {
                 dir('frontend') {
                     script {
 
-                        def frontendUrl = "http://localhost:4200"
+                        def frontendUrl = "http://host.docker.internal:4200"
 
                         bat 'if not exist owaspzap-reports mkdir owaspzap-reports'
 
