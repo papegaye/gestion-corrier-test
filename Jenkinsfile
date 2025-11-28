@@ -201,6 +201,130 @@ pipeline {
             }
         }
 
+        // Scan Backend image
+        stage('Trivy - Scan Backend') {
+            steps {
+
+                dir('backend') {
+
+                    // Installation de Trivy.exe (si absent)
+                    bat """
+                        if not exist ..\\bin mkdir ..\\bin
+
+                        if not exist ..\\bin\\trivy.exe (
+                            powershell -Command "Invoke-WebRequest -Uri https://github.com/aquasecurity/trivy/releases/download/v0.67.0/trivy_0.67.0_Windows-64bit.zip -OutFile trivy.zip"
+                            powershell -Command "Expand-Archive -Force trivy.zip ..\\bin"
+                            del trivy.zip
+                        )
+                    """
+
+                    /// Création du dossier des rapports ==="
+                    bat """
+                        if not exist trivy-reports mkdir trivy-reports
+                    """
+
+                    // Scan de l'image Docker Backend
+                    bat """
+                        ..\\bin\\trivy.exe image ^
+                            --timeout 10m ^
+                            --format json ^
+                            -o trivy-reports\\trivy-backend.json ^
+                            %BACKEND_IMAGE%:%BACKEND_TAG%
+                    """
+
+                    //  Conversion Rapport JSON → HTML
+                    bat """
+                        ..\\bin\\trivy.exe convert ^
+                            trivy-reports\\trivy-backend.json ^
+                            --output trivy-reports\\trivy-backend.html
+                    """
+                }
+            }
+
+            post {
+                always {
+                    //  Archivage des rapports Trivy
+
+                    archiveArtifacts artifacts: 'backend/trivy-reports/trivy-backend.json', fingerprint: true
+                    archiveArtifacts artifacts: 'backend/trivy-reports/trivy-backend.html', fingerprint: true
+
+                    //  Publication rapport HTML dans Jenkins
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'backend/trivy-reports',
+                        reportFiles: 'trivy-backend.html',
+                        reportName: 'Trivy Backend Scan'
+                    ])
+                }
+            }
+        }
+
+
+
+        // Scan Frontend image
+        stage('Trivy - Scan Frontend') {
+            steps {
+                dir('frontend') {
+
+                    // Installation Trivy.exe si absent
+                    bat """
+                        if not exist ..\\bin mkdir ..\\bin
+
+                        if not exist ..\\bin\\trivy.exe (
+                            powershell -Command "Invoke-WebRequest -Uri https://github.com/aquasecurity/trivy/releases/download/v0.67.0/trivy_0.67.0_Windows-64bit.zip -OutFile trivy.zip"
+                            powershell -Command "Expand-Archive -Force trivy.zip ..\\bin"
+                            del trivy.zip
+                        )
+                    """
+
+
+
+                    // Création dossier rapports
+                    bat """
+                        if not exist trivy-reports mkdir trivy-reports
+                    """
+
+                    // Scan Docker image Frontend
+                    bat """
+                        ..\\bin\\trivy.exe image ^
+                            --timeout 10m ^
+                            --format json ^
+                            -o trivy-reports\\trivy-frontend.json ^
+                            %FRONTEND_IMAGE%:%FRONTEND_TAG%
+                    """
+
+                    // Conversion  Rapport JSON → HTML (frontend)
+                    bat """
+                        ..\\bin\\trivy.exe convert ^
+                            trivy-reports\\trivy-frontend.json ^
+                            --output trivy-reports\\trivy-frontend.html
+                    """
+                }
+            }
+
+            post {
+                always {
+
+                    // Archivage des rapports Frontend
+
+                    archiveArtifacts artifacts: 'frontend/trivy-reports/trivy-frontend.json', fingerprint: true
+                    archiveArtifacts artifacts: 'frontend/trivy-reports/trivy-frontend.html', fingerprint: true
+
+                    //  Publication rapport HTML Frontend dans Jenkins
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'frontend/trivy-reports',
+                        reportFiles: 'trivy-frontend.html',
+                        reportName: 'Trivy Frontend Scan'
+                    ])
+                }
+            }
+        }
+
         /* =======================================================
            6. DEPLOY DOCKER COMPOSE
         ======================================================== */
