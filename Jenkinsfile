@@ -4,7 +4,7 @@ pipeline {
         label 'agent-windows'
     }
 
-   tools {
+    tools {
         maven 'Maven-3.9.6'
     }
 
@@ -60,7 +60,6 @@ pipeline {
                     script {
                         withSonarQubeEnv('SonarQube') {
                             withCredentials([string(credentialsId: 'sonor-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
-
                                 bat """
                                     mvn clean verify -DskipTests sonar:sonar ^
                                         -Dsonar.projectKey=analyse-code-backend ^
@@ -75,14 +74,6 @@ pipeline {
             }
         }
 
-       /*  stage('Quality Gate Backend') {
-            steps {
-                timeout(time: 30, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        } */
-
         /* =======================================================
            4. SONARQUBE FRONTEND
         ======================================================== */
@@ -90,11 +81,11 @@ pipeline {
             steps {
                 dir('frontend') {
                     script {
-
                         withSonarQubeEnv('SonarQube') {
                             withCredentials([string(credentialsId: 'sonor-id-credential', variable: 'SONAR_AUTH_TOKEN')]) {
 
-                                def scannerHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                                def scannerHome = tool name: 'SonarQubeScanner',
+                                    type: 'hudson.plugins.sonar.SonarRunnerInstallation'
 
                                 bat """
                                     "${scannerHome}\\bin\\sonar-scanner.bat" ^
@@ -106,22 +97,13 @@ pipeline {
                                 """
                             }
                         }
-
                     }
                 }
             }
         }
 
-        /* stage('Quality Gate Frontend') {
-            steps {
-                timeout(time: 30, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        } */
-
         /* =======================================================
-           5. OWASP DEPENDENCY-CHECK BACKEND b
+           5. OWASP DEPENDENCY-CHECK BACKEND
         ======================================================== */
         stage('OWASP Dependency-Check Backend') {
             steps {
@@ -142,16 +124,18 @@ pipeline {
                     }
                 }
             }
+
             post {
                 always {
                     dependencyCheckPublisher pattern: 'backend/reports/dependency-check-report.xml'
-                    archiveArtifacts artifacts: 'backend/reports/dependency-check-report.html', fingerprint: true
+                    archiveArtifacts artifacts: 'backend/reports/dependency-check-report.html',
+                        fingerprint: true
                 }
             }
         }
 
         /* =======================================================
-           6. OWASP DEPENDENCY-CHECK FRONTEND ddd
+           6. OWASP DEPENDENCY-CHECK FRONTEND
         ======================================================== */
         stage('OWASP Dependency-Check Frontend') {
             steps {
@@ -174,10 +158,12 @@ pipeline {
                     }
                 }
             }
+
             post {
                 always {
                     dependencyCheckPublisher pattern: 'frontend/reports/dependency-check-report.xml'
-                    archiveArtifacts artifacts: 'frontend/reports/dependency-check-report.html', fingerprint: true
+                    archiveArtifacts artifacts: 'frontend/reports/dependency-check-report.html',
+                        fingerprint: true
                 }
             }
         }
@@ -201,13 +187,13 @@ pipeline {
             }
         }
 
-        // Scan Backend image
+        /* =======================================================
+           8. TRIVY BACKEND
+        ======================================================== */
         stage('Trivy - Scan Backend') {
             steps {
-
                 dir('backend') {
 
-                    // Installation de Trivy.exe (si absent)
                     bat """
                         if not exist ..\\bin mkdir ..\\bin
 
@@ -218,12 +204,8 @@ pipeline {
                         )
                     """
 
-                    /// Création du dossier des rapports ==="
-                    bat """
-                        if not exist trivy-reports mkdir trivy-reports
-                    """
+                    bat "if not exist trivy-reports mkdir trivy-reports"
 
-                    // Scan de l'image Docker Backend v
                     bat """
                         ..\\bin\\trivy.exe image ^
                             --timeout 10m ^
@@ -232,7 +214,6 @@ pipeline {
                             %BACKEND_IMAGE%:%BACKEND_TAG%
                     """
 
-                    //  Conversion Rapport JSON → HTML
                     bat """
                         ..\\bin\\trivy.exe convert ^
                             trivy-reports\\trivy-backend.json ^
@@ -243,12 +224,9 @@ pipeline {
 
             post {
                 always {
-                    //  Archivage des rapports Trivy
-
                     archiveArtifacts artifacts: 'backend/trivy-reports/trivy-backend.json', fingerprint: true
                     archiveArtifacts artifacts: 'backend/trivy-reports/trivy-backend.html', fingerprint: true
 
-                    //  Publication rapport HTML dans Jenkins
                     publishHTML(target: [
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
@@ -261,14 +239,13 @@ pipeline {
             }
         }
 
-
-
-        // Scan Frontend image
+        /* =======================================================
+           9. TRIVY FRONTEND
+        ======================================================== */
         stage('Trivy - Scan Frontend') {
             steps {
                 dir('frontend') {
 
-                    // Installation Trivy.exe si absent
                     bat """
                         if not exist ..\\bin mkdir ..\\bin
 
@@ -279,14 +256,8 @@ pipeline {
                         )
                     """
 
+                    bat "if not exist trivy-reports mkdir trivy-reports"
 
-
-                    // Création dossier rapports
-                    bat """
-                        if not exist trivy-reports mkdir trivy-reports
-                    """
-
-                    // Scan Docker image Frontend
                     bat """
                         ..\\bin\\trivy.exe image ^
                             --timeout 10m ^
@@ -295,7 +266,6 @@ pipeline {
                             %FRONTEND_IMAGE%:%FRONTEND_TAG%
                     """
 
-                    // Conversion  Rapport JSON → HTML (frontend)
                     bat """
                         ..\\bin\\trivy.exe convert ^
                             trivy-reports\\trivy-frontend.json ^
@@ -306,13 +276,9 @@ pipeline {
 
             post {
                 always {
-
-                    // Archivage des rapports Frontend
-
                     archiveArtifacts artifacts: 'frontend/trivy-reports/trivy-frontend.json', fingerprint: true
                     archiveArtifacts artifacts: 'frontend/trivy-reports/trivy-frontend.html', fingerprint: true
 
-                    //  Publication rapport HTML Frontend dans Jenkins
                     publishHTML(target: [
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
@@ -326,12 +292,94 @@ pipeline {
         }
 
         /* =======================================================
-           6. DEPLOY DOCKER COMPOSE
+           10. DEPLOY DOCKER COMPOSE
         ======================================================== */
         stage('Deploy with Docker Compose') {
             steps {
                 bat "docker-compose down || true"
                 bat "docker-compose up -d --build"
+            }
+        }
+
+        /* =======================================================
+           11. OWASP ZAP BACKEND
+        ======================================================== */
+        stage('OWASP ZAP Scan Backend') {
+            steps {
+                dir('backend') {
+                    script {
+
+                        def backendUrl = "http://localhost:8900"
+
+                        bat 'if not exist owaspzap-reports mkdir owaspzap-reports'
+
+                        bat """
+                            docker run --rm ^
+                                -v %CD%\\owaspzap-reports:/zap/wrk ^
+                                ghcr.io/zaproxy/zaproxy:stable zap-baseline.py ^
+                                -t ${backendUrl} ^
+                                -r owaspzap-report-backend.html ^
+                                -I
+                        """
+                    }
+                }
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: 'backend/owaspzap-reports/owaspzap-report-backend.html',
+                        fingerprint: true
+
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'backend/owaspzap-reports',
+                        reportFiles: 'owaspzap-report-backend.html',
+                        reportName: 'OWASP ZAP Backend Report'
+                    ])
+                }
+            }
+        }
+
+        /* =======================================================
+           12. OWASP ZAP FRONTEND
+        ======================================================== */
+        stage('OWASP ZAP Scan Frontend') {
+            steps {
+                dir('frontend') {
+                    script {
+
+                        def frontendUrl = "http://localhost:4200"
+
+                        bat 'if not exist owaspzap-reports mkdir owaspzap-reports'
+
+                        bat """
+                            docker run --rm ^
+                                -v %CD%\\owaspzap-reports:/zap/wrk ^
+                                ghcr.io/zaproxy/zaproxy:stable zap-baseline.py ^
+                                -t ${frontendUrl} ^
+                                -r owaspzap-report-frontend.html ^
+                                -I
+                        """
+                    }
+                }
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: 'frontend/owaspzap-reports/owaspzap-report-frontend.html',
+                        fingerprint: true
+
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'frontend/owaspzap-reports',
+                        reportFiles: 'owaspzap-report-frontend.html',
+                        reportName: 'OWASP ZAP Frontend Report'
+                    ])
+                }
             }
         }
     }
