@@ -10,11 +10,11 @@ pipeline {
 
     environment {
         // DockerHub
-        DOCKERHUB_USER = "test-ci-cd-microservices"
-        BACKEND_IMAGE  = "${DOCKERHUB_USER}/backend-courrier"
-        FRONTEND_IMAGE = "${DOCKERHUB_USER}/frontend-courrier"
-        BACKEND_TAG    = "1.${BUILD_NUMBER}"
-        FRONTEND_TAG   = "1.${BUILD_NUMBER}"
+        DOCKERHUB_USER     = "test-ci-cd-microservices"
+        BACKEND_IMAGE      = "${DOCKERHUB_USER}/backend-courrier"
+        FRONTEND_IMAGE     = "${DOCKERHUB_USER}/frontend-courrier"
+        BACKEND_TAG        = "1.${BUILD_NUMBER}"
+        FRONTEND_TAG       = "1.${BUILD_NUMBER}"
 
         // Frontend GitHub
         FRONTEND_REPO_URL     = 'https://github.com/papegaye/frontend-courrier-test.git'
@@ -124,12 +124,10 @@ pipeline {
                     }
                 }
             }
-
             post {
                 always {
                     dependencyCheckPublisher pattern: 'backend/reports/dependency-check-report.xml'
-                    archiveArtifacts artifacts: 'backend/reports/dependency-check-report.html',
-                        fingerprint: true
+                    archiveArtifacts artifacts: 'backend/reports/dependency-check-report.html', fingerprint: true
                 }
             }
         }
@@ -158,12 +156,10 @@ pipeline {
                     }
                 }
             }
-
             post {
                 always {
                     dependencyCheckPublisher pattern: 'frontend/reports/dependency-check-report.xml'
-                    archiveArtifacts artifacts: 'frontend/reports/dependency-check-report.html',
-                        fingerprint: true
+                    archiveArtifacts artifacts: 'frontend/reports/dependency-check-report.html', fingerprint: true
                 }
             }
         }
@@ -193,7 +189,6 @@ pipeline {
         stage('Trivy - Scan Backend') {
             steps {
                 dir('backend') {
-
                     bat """
                         if not exist ..\\bin mkdir ..\\bin
 
@@ -221,12 +216,10 @@ pipeline {
                     """
                 }
             }
-
             post {
                 always {
                     archiveArtifacts artifacts: 'backend/trivy-reports/trivy-backend.json', fingerprint: true
                     archiveArtifacts artifacts: 'backend/trivy-reports/trivy-backend.html', fingerprint: true
-
                     publishHTML(target: [
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
@@ -245,7 +238,6 @@ pipeline {
         stage('Trivy - Scan Frontend') {
             steps {
                 dir('frontend') {
-
                     bat """
                         if not exist ..\\bin mkdir ..\\bin
 
@@ -273,12 +265,10 @@ pipeline {
                     """
                 }
             }
-
             post {
                 always {
                     archiveArtifacts artifacts: 'frontend/trivy-reports/trivy-frontend.json', fingerprint: true
                     archiveArtifacts artifacts: 'frontend/trivy-reports/trivy-frontend.html', fingerprint: true
-
                     publishHTML(target: [
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
@@ -308,7 +298,6 @@ pipeline {
             steps {
                 dir('backend') {
                     script {
-
                         def backendUrl = "http://host.docker.internal:8900"
 
                         bat 'if not exist owaspzap-reports mkdir owaspzap-reports'
@@ -324,12 +313,9 @@ pipeline {
                     }
                 }
             }
-
             post {
                 always {
-                    archiveArtifacts artifacts: 'backend/owaspzap-reports/owaspzap-report-backend.html',
-                        fingerprint: true
-
+                    archiveArtifacts artifacts: 'backend/owaspzap-reports/owaspzap-report-backend.html', fingerprint: true
                     publishHTML([
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
@@ -349,7 +335,6 @@ pipeline {
             steps {
                 dir('frontend') {
                     script {
-
                         def frontendUrl = "http://host.docker.internal:4200"
 
                         bat 'if not exist owaspzap-reports mkdir owaspzap-reports'
@@ -365,12 +350,9 @@ pipeline {
                     }
                 }
             }
-
             post {
                 always {
-                    archiveArtifacts artifacts: 'frontend/owaspzap-reports/owaspzap-report-frontend.html',
-                        fingerprint: true
-
+                    archiveArtifacts artifacts: 'frontend/owaspzap-reports/owaspzap-report-frontend.html', fingerprint: true
                     publishHTML([
                         allowMissing: false,
                         alwaysLinkToLastBuild: true,
