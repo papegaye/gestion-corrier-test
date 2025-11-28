@@ -223,7 +223,7 @@ pipeline {
                         if not exist trivy-reports mkdir trivy-reports
                     """
 
-                    // Scan de l'image Docker Backend
+                    // Scan de l'image Docker Backend v
                     bat """
                         ..\\bin\\trivy.exe image ^
                             --timeout 10m ^
